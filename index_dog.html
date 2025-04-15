@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>강아지 과자 먹기 게임</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #d0f0ff;
+    }
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background-color: #d0f0ff;
+    }
+    #dog {
+      width: 80px;
+      height: 80px;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616408.png');
+      background-size: cover;
+    }
+    .treat {
+      width: 40px;
+      height: 40px;
+      position: absolute;
+      top: 0;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/1046/1046784.png');
+      background-size: cover;
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="dog"></div>
+    <div id="score">점수: 0</div>
+    <div id="game-over">게임 종료!</div>
+  </div>
+
+  <script>
+    const game = document.getElementById("game");
+    const dog = document.getElementById("dog");
+    const scoreDisplay = document.getElementById("score");
+    const gameOverDisplay = document.getElementById("game-over");
+
+    let score = 0;
+    let dogX = window.innerWidth / 2;
+    let gameRunning = true;
+    let treatInterval;
+
+    function createTreat() {
+      if (!gameRunning) return;
+
+      const treat = document.createElement("div");
+      treat.classList.add("treat");
+      treat.style.left = Math.random() * (window.innerWidth - 40) + "px";
+      game.appendChild(treat);
+
+      let y = 0;
+      const fall = setInterval(() => {
+        if (!gameRunning) {
+          clearInterval(fall);
+          if (treat.parentNode) game.removeChild(treat);
+          return;
+        }
+
+        y += 5;
+        treat.style.top = y + "px";
+
+        const treatRect = treat.getBoundingClientRect();
+        const dogRect = dog.getBoundingClientRect();
+
+        if (
+          treatRect.bottom >= dogRect.top &&
+          treatRect.right >= dogRect.left &&
+          treatRect.left <= dogRect.right &&
+          treatRect.top <= dogRect.bottom
+        ) {
+          clearInterval(fall);
+          game.removeChild(treat);
+          score++;
+          scoreDisplay.innerText = "점수: " + score;
+
+          if (score >= 30) {
+            endGame();
+          }
+        }
+
+        if (y > window.innerHeight) {
+          clearInterval(fall);
+          if (treat.parentNode) game.removeChild(treat);
+        }
+      }, 20);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      clearInterval(treatInterval);
+      gameOverDisplay.style.display = "block";
+    }
+
+    treatInterval = setInterval(createTreat, 1500);
+
+    document.addEventListener("keydown", (e) => {
+      if (!gameRunning) return;
+
+      if (e.key === "ArrowLeft") {
+        dogX -= 30;
+      } else if (e.key === "ArrowRight") {
+        dogX += 30;
+      }
+      dogX = Math.max(0, Math.min(window.innerWidth - 80, dogX));
+      dog.style.left = dogX + "px";
+    });
+  </script>
+</body>
+</html>
